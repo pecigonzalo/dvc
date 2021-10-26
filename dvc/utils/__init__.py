@@ -509,3 +509,13 @@ def errored_revisions(rev_data: Dict) -> List:
         if nested_contains(data, "error"):
             result.append(revision)
     return result
+
+
+def call_only_once(func):
+    def wrapper(*args, **kwargs):
+        if not wrapper._already_called:
+            func(*args, **kwargs)
+            wrapper._already_called = True
+
+    wrapper._already_called = False
+    return wrapper

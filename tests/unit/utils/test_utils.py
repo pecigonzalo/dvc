@@ -6,6 +6,7 @@ import pytest
 from dvc.fs.local import LocalFileSystem
 from dvc.path_info import PathInfo
 from dvc.utils import (
+    call_only_once,
     dict_sha256,
     file_md5,
     fix_env,
@@ -232,3 +233,17 @@ def test_hint_on_lockfile():
 )
 def test_dict_sha256(d, sha):
     assert dict_sha256(d) == sha
+
+
+def test_call_only_once(mocker):
+
+    m = mocker.MagicMock()
+
+    @call_only_once
+    def foo():
+        m()
+
+    foo()
+    foo()
+
+    m.assert_called_once()
