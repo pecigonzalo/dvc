@@ -1,7 +1,11 @@
 import logging
+import webbrowser
+from pathlib import Path
+from platform import uname
 from typing import TYPE_CHECKING, List, Optional
 
 from dvc.render.utils import render
+from dvc.utils import call_only_once
 
 logger = logging.getLogger(__name__)
 
@@ -10,15 +14,27 @@ if TYPE_CHECKING:
     from dvc.path_info import PathInfo
     from dvc.repo import Repo
 
+webbrowser_open = call_only_once(webbrowser.open)
+
 
 def create_summary(out):
+
     assert out.live and out.live["html"]
 
     metrics, plots = out.repo.live.show(str(out.path_info))
 
     html_path = out.path_info.fspath + "_dvc_plots"
 
-    render(out.repo, plots, metrics=metrics, path=html_path, refresh_seconds=5)
+    index_path = render(
+        out.repo, plots, metrics=metrics, path=html_path, refresh_seconds=5
+    )
+
+    url = index_path.as_uri()
+
+    if "Microsoft" in uname().release:
+        url = Path(index_path) / "index.html"
+
+    webbrowser_open(url)
 
 
 def summary_path_info(out: "Output") -> Optional["PathInfo"]:
